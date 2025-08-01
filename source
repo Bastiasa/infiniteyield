@@ -6951,46 +6951,50 @@ addcmd('togglenoclip',{},function(args, speaker)
 end)
 
 addcmd('gather', function(args, speaker)
-function Includes(t:{any}, object:any): boolean
-		return table.find(t, object) ~= nil
+	
+	local players = getPlayers(args[1], speaker)
+	
+	if not players then
+		return
 	end
-
-	function RemoveIfExists(t:{any}, object:any)
-		if Includes(t, object) then
-			table.remove(t, table.find(t, object))
+	
+	task.spawn(function()
+		
+		local function Includes(t:{any}, object:any): boolean
+			return table.find(t, object) ~= nil
 		end
-	end
 
-	function SetCharacterLock(character:Model, enabled:boolean)
-
-		for _, child in pairs(character:GetChildren()) do
-			if child:IsA("BasePart") then
-				child.Anchored = enabled
+		local function RemoveIfExists(t:{any}, object:any)
+			if Includes(t, object) then
+				table.remove(t, table.find(t, object))
 			end
 		end
-	end
 
-	function GatherEveryone()
+		local function SetCharacterLock(character:Model, enabled:boolean)
+
+			for _, child in pairs(character:GetChildren()) do
+				if child:IsA("BasePart") then
+					child.Anchored = enabled
+				end
+			end
+		end
 
 
+		local player = Players.LocalPlayer
 		local currentCframe = player.Character.PrimaryPart.CFrame
 
+		RemoveIfExists(players, player)
 
-		local everyone = game:GetService("Players"):GetPlayers()
-
-		RemoveIfExists(everyone, player)
-
-		for _, player in everyone do
-			if player.Character then
-				SetCharacterLock(player.Character, false)
-				player.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
-				SetCharacterLock(player.Character, true)
+		for _, v in pairs(player) do
+			local target:Player = Players[v]
+			if target.Character then
+				SetCharacterLock(target.Character, false)
+				target.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
+				SetCharacterLock(target.Character, true)
 			end
 		end
-
-	end
-
-	GatherEveryone()
+		
+	end)
 end)
 
 FLYING = false
