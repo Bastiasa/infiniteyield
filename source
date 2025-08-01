@@ -6952,7 +6952,7 @@ end)
 
 addcmd('gather', {}, function(args, speaker)
 	
-	local players = getPlayers(args[1], speaker)
+	local players = getPlayer(args[1], speaker)
 	
 	if not players then
 		return
