@@ -6950,7 +6950,7 @@ addcmd('togglenoclip',{},function(args, speaker)
 	end
 end)
 
-addcmd('gather', function(args, speaker)
+addcmd('gather', {}, function(args, speaker)
 	
 	local players = getPlayers(args[1], speaker)
 	
