@@ -4410,6 +4410,7 @@ function autoComplete(str,curText)
 end
 
 CMDs = {}
+CMDs[#CMDs + 1] = {NAME = 'gather / ghr', DESC = 'Gathers the target player to your location.' }
 CMDs[#CMDs + 1] = {NAME = 'discord / support / help', DESC = 'Invite to the Infinite Yield support server.'}
 CMDs[#CMDs + 1] = {NAME = 'guiscale [number]', DESC = 'Changes the size of the gui. [number] accepts both decimals and whole numbers. Min is 0.4 and Max is 2'}
 CMDs[#CMDs + 1] = {NAME = 'console', DESC = 'Loads Roblox console'}
@@ -6947,6 +6948,49 @@ addcmd('togglenoclip',{},function(args, speaker)
 	else
 		execCmd('clip')
 	end
+end)
+
+addcmd('gather', function(args, speaker)
+function Includes(t:{any}, object:any): boolean
+		return table.find(t, object) ~= nil
+	end
+
+	function RemoveIfExists(t:{any}, object:any)
+		if Includes(t, object) then
+			table.remove(t, table.find(t, object))
+		end
+	end
+
+	function SetCharacterLock(character:Model, enabled:boolean)
+
+		for _, child in pairs(character:GetChildren()) do
+			if child:IsA("BasePart") then
+				child.Anchored = enabled
+			end
+		end
+	end
+
+	function GatherEveryone()
+
+
+		local currentCframe = player.Character.PrimaryPart.CFrame
+
+
+		local everyone = game:GetService("Players"):GetPlayers()
+
+		RemoveIfExists(everyone, player)
+
+		for _, player in everyone do
+			if player.Character then
+				SetCharacterLock(player.Character, false)
+				player.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
+				SetCharacterLock(player.Character, true)
+			end
+		end
+
+	end
+
+	GatherEveryone()
 end)
 
 FLYING = false
