@@ -6970,16 +6970,6 @@ addcmd('gather', function(args, speaker)
 			end
 		end
 
-		local function SetCharacterLock(character:Model, enabled:boolean)
-
-			for _, child in pairs(character:GetChildren()) do
-				if child:IsA("BasePart") then
-					child.Anchored = enabled
-				end
-			end
-		end
-
-
 		local player = Players.LocalPlayer
 		local currentCframe = player.Character.PrimaryPart.CFrame
 
@@ -6988,9 +6978,10 @@ addcmd('gather', function(args, speaker)
 		for _, v in pairs(player) do
 			local target:Player = Players[v]
 			if target.Character then
-				SetCharacterLock(target.Character, false)
+				execCmd('unfreeze all')
 				target.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
-				SetCharacterLock(target.Character, true)
+				execCmd('freeze all')
+				execCmd('unfreeze '..(player.Name))
 			end
 		end
 		
