@@ -6975,14 +6975,12 @@ addcmd('gather', {}, function(args, speaker)
 
 	execCmd('unfreeze all')
 
-	for _, v in pairs(player) do
+	for _, v in pairs(players) do
 
 		local target:Player = Players[v]
 
 		if target.Character then
-			task.spawn(function()
-				target.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
-			end)
+			target.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
 		end
 	end
 
