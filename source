@@ -6954,40 +6954,40 @@ addcmd('gather', {}, function(args, speaker)
 	
 	local players = getPlayer(args[1], speaker)
 	
-	if not players then
+	if players == nil then
 		return
 	end
-	
-	task.spawn(function()
-		
-		local function Includes(t:{any}, object:any): boolean
-			return table.find(t, object) ~= nil
+
+	local function Includes(t:{any}, object:any): boolean
+		return table.find(t, object) ~= nil
+	end
+
+	local function RemoveIfExists(t:{any}, object:any)
+		if Includes(t, object) then
+			table.remove(t, table.find(t, object))
 		end
+	end
 
-		local function RemoveIfExists(t:{any}, object:any)
-			if Includes(t, object) then
-				table.remove(t, table.find(t, object))
-			end
-		end
+	local player = Players.LocalPlayer
+	local currentCframe = player.Character.PrimaryPart.CFrame
 
-		local player = Players.LocalPlayer
-		local currentCframe = player.Character.PrimaryPart.CFrame
+	RemoveIfExists(players, player.Name)
 
-		RemoveIfExists(players, player.Name)
+	execCmd('unfreeze all')
 
-		execCmd('unfreeze all')
+	for _, v in pairs(player) do
 
-		for _, v in pairs(player) do
-			local target:Player = Players[v]
-			if target.Character then
+		local target:Player = Players[v]
+
+		if target.Character then
+			task.spawn(function()
 				target.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
-			end
+			end)
 		end
+	end
 
-		execCmd('freeze all')
-		execCmd('unfreeze '..(player.Name))
-		
-	end)
+	execCmd('freeze all')
+	execCmd('unfreeze '..(player.Name))
 end)
 
 FLYING = false
