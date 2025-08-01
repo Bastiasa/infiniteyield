@@ -6973,17 +6973,19 @@ addcmd('gather', function(args, speaker)
 		local player = Players.LocalPlayer
 		local currentCframe = player.Character.PrimaryPart.CFrame
 
-		RemoveIfExists(players, player)
+		RemoveIfExists(players, player.Name)
+
+		execCmd('unfreeze all')
 
 		for _, v in pairs(player) do
 			local target:Player = Players[v]
 			if target.Character then
-				execCmd('unfreeze all')
 				target.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
-				execCmd('freeze all')
-				execCmd('unfreeze '..(player.Name))
 			end
 		end
+
+		execCmd('freeze all')
+		execCmd('unfreeze '..(player.Name))
 		
 	end)
 end)
