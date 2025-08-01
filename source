@@ -6979,7 +6979,7 @@ addcmd('gather', {}, function(args, speaker)
 
 		local target:Player = Players[v]
 
-		if target && target.Character then
+		if target and target.Character then
 			target.Character.PrimaryPart.CFrame = currentCframe + (currentCframe.LookVector * 1.2)
 		end
 	end
