@@ -1,0 +1,229 @@
+-- Teleporter & Deleter
+
+
+local ContextActionService = game:GetService("ContextActionService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = game:GetService("Players").LocalPlayer
+local character :Model = player.Character
+local mouse = player:GetMouse()
+
+local deleterEnabled = false
+local deleterTarget:BasePart?
+local deleterSelector:SelectionBox = Instance.new("SelectionBox")
+
+local deleterModifedParts: {{string:any}} = {}
+
+deleterSelector.LineThickness = 0.2
+deleterSelector.Transparency = 0.3
+deleterSelector.Color3 = Color3.fromRGB(255, 16, 20)
+
+deleterSelector.SurfaceColor3 = Color3.fromRGB(255, 8, 119)
+deleterSelector.SurfaceTransparency = 0.7
+
+
+
+function ClearDeleterSelector()
+	deleterSelector.Parent = nil
+	deleterSelector.Adornee = nil	
+end
+
+
+function OnPlayerCharacterLoaded(c: Model)
+	character = c
+	local humanoid:Humanoid = character:WaitForChild("Humanoid")
+	
+	humanoid.Died:Once(function()
+		ClearDeleterSelector()
+		
+		if deleterEnabled then
+			SwitchDeleter()
+		end
+	end)
+
+
+end
+
+
+function RelativeUdim2(x:number, y:number):UDim2
+	return UDim2.new(x, 0, y, 0)
+end
+
+function SwitchDeleter()
+	deleterEnabled = not deleterEnabled
+	
+	ContextActionService:SetTitle(
+		"switch_deleter",
+		deleterEnabled and "Disable" or "Enable"
+	)
+	
+	if not deleterEnabled then
+		ClearDeleterSelector()
+	end
+
+end
+
+function ResetDeleter()
+	for _, modifiedPart in pairs(deleterModifedParts) do
+		local part:BasePart = modifiedPart.part
+		
+		for propertyName, propertyValue in pairs(modifiedPart.original) do
+			part[propertyName] = propertyValue
+		end
+		
+	end
+	
+	deleterModifedParts = {}
+end
+
+function Teleport(direction:CFrame)
+	character.PrimaryPart.CFrame = character.PrimaryPart.CFrame + direction * 17
+	character.PrimaryPart.AssemblyLinearVelocity = Vector3.zero
+	character.PrimaryPart.Velocity = Vector3.zero
+end
+
+
+
+function OnActionBegun(actionName:string, inputObject:InputObject)
+	if actionName == "teleport_forward" then
+		Teleport(character.PrimaryPart.CFrame.LookVector)
+	elseif actionName == "teleport_upward" then
+		Teleport(character.PrimaryPart.CFrame.UpVector)
+	elseif actionName == "switch_deleter" then
+		SwitchDeleter()
+	elseif actionName == "reset_deleter" then
+		ResetDeleter()
+	end
+
+end
+
+
+
+function OnStep(time:number, deltaTime:number)
+	
+	if not deleterEnabled then
+		return
+	end
+	
+	local target = mouse.Target
+
+	if target == nil then
+		ClearDeleterSelector()
+		return 
+	end
+	
+	deleterTarget = target
+	
+	if deleterSelector.Parent ~= target or deleterSelector.Adornee ~= target then
+		deleterSelector.Parent = target
+		deleterSelector.Adornee = target 
+	end
+
+	
+	
+end
+
+mouse.Button1Up:Connect(function() 
+	if deleterEnabled and deleterTarget then
+		ClearDeleterSelector()
+		
+		table.insert(deleterModifedParts, {
+			["part"] = deleterTarget,
+			["original"]={
+				["Transparency"]= deleterTarget.Transparency,
+				["CanCollide"] = deleterTarget.CanCollide,
+				["CanTouch"] = deleterTarget.CanTouch,
+				["CanQuery"] = deleterTarget.CanQuery
+			}
+		})
+		
+		deleterTarget.Transparency = .6
+		
+		deleterTarget.CanCollide = false
+		deleterTarget.CanTouch = false
+		deleterTarget.CanQuery = false
+	end	
+end)
+
+
+function HandleActions(actionName:string, inputState:Enum.UserInputState, inputObject:InputObject)
+	
+	if inputState == Enum.UserInputState.Begin then
+		OnActionBegun(actionName, inputObject)
+	end
+	
+
+end
+
+
+ContextActionService:BindAction(
+	"teleport_forward", 
+	HandleActions,
+	true,
+	Enum.KeyCode.Z
+)
+
+ContextActionService:BindAction(
+	"teleport_upward",
+	HandleActions,
+	true,
+	Enum.KeyCode.E
+)
+
+ContextActionService:BindAction(
+	"switch_deleter",
+	HandleActions,
+	true,
+	Enum.KeyCode.X
+)
+
+ContextActionService:BindAction(
+	"reset_deleter",
+	HandleActions,
+	true,
+	Enum.KeyCode.C
+)
+
+ContextActionService:SetPosition(
+	"teleport_forward",
+	RelativeUdim2(0.2, 0.3)
+)
+
+ContextActionService:SetTitle(
+	"teleport_forward",
+	"Front"
+)
+
+ContextActionService:SetTitle(
+	"teleport_upward",
+	"Up"
+)
+
+ContextActionService:SetPosition(
+	"teleport_upward",
+	RelativeUdim2(0.2, 0)
+)
+
+ContextActionService:SetPosition(
+	"reset_deleter",
+	RelativeUdim2(0.8, 0)
+)
+
+ContextActionService:SetTitle(
+	"reset_deleter",
+	"RESET"
+)
+
+ContextActionService:SetPosition(
+	"switch_deleter",
+	RelativeUdim2(0.5, 0)
+)
+
+ContextActionService:SetTitle(
+	"switch_deleter",
+	"Enable"
+)
+
+RunService.Stepped:Connect(OnStep)
+player.CharacterAdded:Connect(OnPlayerCharacterLoaded)

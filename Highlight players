@@ -1,0 +1,147 @@
+-- Players Highlight
+
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local trackingPlayersIds:{number}= {}
+
+
+function Includes(t:{any}, object:any): boolean
+	return table.find(t, object) ~= nil
+end
+
+function RemoveIfExists(t:{any}, object:any)
+	if Includes(t, object) then
+		table.remove(t, table.find(t, object))
+	end
+end
+
+function CreateMark(head:BasePart): BillboardGui
+
+	local root = Instance.new("BillboardGui")
+	local image = Instance.new("ImageLabel")
+
+	local part = head:Clone()
+	local weld = Instance.new("Weld")
+
+	part.Parent = workspace
+	part.Transparency = 1
+
+	weld.Part0 = head
+	weld.Part1 = part
+	weld.Parent = part
+
+	root.Parent = part
+	root.ResetOnSpawn = false
+	root.Size = UDim2.fromScale(2,2)
+	root.StudsOffset = Vector3.new(0, 3, 0)
+	root.AlwaysOnTop = true
+
+	image.Parent = root
+	image.Size = UDim2.fromScale(1,1)
+	image.Image = "rbxassetid://6309764044"
+
+	image.BackgroundTransparency = 1
+	image.BorderSizePixel = 0
+
+	head.Destroying:Connect(function ()
+		part:Destroy()
+	end)
+
+	return root
+end
+
+
+function TrackPlayer(player:Player)
+
+	if false or Includes(trackingPlayersIds, player.UserId) then
+		return
+	end
+
+	table.insert(trackingPlayersIds, player.UserId)
+
+
+	local mark:BillboardGui?
+	local higlightInstance:Highlight?
+
+	local blueColor = Color3.fromRGB(7, 197, 255)
+	local redColor = Color3.fromRGB(255, 0, 4)
+	local greenColor = Color3.fromRGB(0, 255, 123)
+
+	local function SetHighlightColour(color:Color3)
+		if higlightInstance then
+			higlightInstance.FillColor = color
+			higlightInstance.OutlineColor = color
+		end
+
+	end
+
+
+	local Highlight = function(character: Model) 
+
+		higlightInstance = Instance.new("Highlight")
+		SetHighlightColour(greenColor)
+
+		CreateMark(character:WaitForChild("Head"))
+
+		local humanoid:Humanoid = character:WaitForChild("Humanoid")
+
+		higlightInstance.Adornee = character
+		higlightInstance.Parent = character
+		higlightInstance.Enabled = true
+
+		local backpack = player.Backpack
+
+		local function CheckColor()
+
+			if backpack:FindFirstChild("Knife") or character:FindFirstChild("Knife") then
+				SetHighlightColour(redColor)
+			elseif backpack:FindFirstChild("Gun") or character:FindFirstChild("Gun") then
+				SetHighlightColour(blueColor)
+			else 
+				SetHighlightColour(greenColor)
+			end
+
+		end
+
+		backpack.ChildAdded:Connect(CheckColor)
+		character.ChildAdded:Connect(CheckColor)
+
+		CheckColor()
+
+	end
+
+	player.CharacterAdded:Connect(Highlight)
+
+	if player.Character then
+		Highlight(player.Character)
+	end
+end
+
+function RemovePlayerTracking(player:Player)
+	RemoveIfExists(trackingPlayersIds, player.UserId)
+end
+
+function TrackPlayers()
+	local playersList = Players:GetPlayers()
+	RemoveIfExists(playersList, localPlayer)
+
+	for _, player in pairs(playersList) do
+		TrackPlayer(player)
+	end
+end
+
+
+TrackPlayers()
+
+Players.ChildAdded:Connect(function(child: Instance) 
+	if child:IsA("Player") then
+		TrackPlayer(child)
+	end	
+end)
+
+Players.ChildRemoved:Connect(function(child: Instance) 
+	if child:IsA("Player") then
+		RemovePlayerTracking(child)
+	end	
+end)
