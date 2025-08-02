@@ -77,11 +77,9 @@ end
 function MovementUpdate(deltaTime)
 	if not targetCharacter or not enabled then return end
 
-	SetLocked(false, targetCharacter)
 	targetCharacter.PrimaryPart.CFrame = CFrame.new(0, 5000, 0)
 	targetCharacter.PrimaryPart.Velocity = Vector3.zero
 	targetCharacter.PrimaryPart.AssemblyLinearVelocity = Vector3.zero
-	SetLocked(true, targetCharacter)
 
 	local humanoid = targetCharacter:FindFirstChild("Humanoid")
 	if not humanoid then return end
@@ -111,7 +109,6 @@ function SetUpInvisibility(character)
 
 	character.PrimaryPart.CFrame = CFrame.new(0,5000,0)
 
-	SetLocked(true, character)
 
 	targetCharacter = character
 
@@ -125,8 +122,6 @@ function SetUpVisibility()
 
 	stepConnection:Disconnect()
 	stepConnection = nil
-
-	SetLocked(false, targetCharacter)
 	targetCharacter.PrimaryPart.CFrame = camera.CFrame
 
 	camera.CameraType = Enum.CameraType.Custom
