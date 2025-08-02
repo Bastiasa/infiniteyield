@@ -77,6 +77,8 @@ end
 function MovementUpdate(deltaTime)
 	if not targetCharacter or not enabled then return end
 
+	targetCharacter.PrimaryPart.CFrame = CFrame.new(0, 5000, 0)
+
 	local humanoid = targetCharacter:FindFirstChild("Humanoid")
 	if not humanoid then return end
 
